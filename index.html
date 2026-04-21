@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFL Felsefe Sözlüğü</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Playfair+Display:ital,wght@0,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #08080a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: #ffffff;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 7vw, 4.2rem);
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.7));
+        }
+
+        .subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(0.7rem, 2.8vw, 1.1rem);
+            font-weight: 400;
+            letter-spacing: 9px;
+            color: #bfa380;
+            margin-top: 25px;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .content {
+            animation: fadeIn 3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; filter: blur(10px); }
+            to { opacity: 1; filter: blur(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="content">
+        <h1>ANKARA FEN LİSESİ</h1>
+        <div class="subtitle">Felsefe Sözlüğü Projesi</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const greekLetters = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ', 'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
+        
+        const mouse = { x: null, y: null, radius: 120 };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        window.addEventListener('mousedown', () => {
+            particles.forEach(p => {
+                let dx = p.x - mouse.x;
+                let dy = p.y - mouse.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 350) {
+                    p.vx += (dx / dist) * 1.5;
+                    p.vy += (dy / dist) * 1.5;
+                }
+            });
+        });
+
+        class Particle {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.3 + 0.6;
+                this.isLetter = Math.random() > 0.85;
+                this.letter = greekLetters[Math.floor(Math.random() * greekLetters.length)];
+                
+                this.vx = (Math.random() - 0.5) * 0.25;
+                this.vy = (Math.random() - 0.5) * 0.25;
+                
+                this.opacity = 0;
+                this.maxOpacity = this.isLetter ? 0.65 : 0.45; 
+                // Ömür süresi bir tık daha uzatıldı (speedOfLife düşürüldü)
+                this.speedOfLife = 0.0004 + Math.random() * 0.0008; 
+                this.state = 'in'; 
+            }
+
+            draw() {
+                ctx.globalAlpha = this.opacity;
+                if (this.isLetter) {
+                    ctx.fillStyle = '#bfa380';
+                    ctx.font = '15px serif';
+                    ctx.fillText(this.letter, this.x, this.y);
+                } else {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius) {
+                    this.vx -= (dx / distance) * 0.015;
+                    this.vy -= (dy / distance) * 0.015;
+                }
+
+                if (this.state === 'in') {
+                    this.opacity += 0.005; // Belirme hızı da biraz daha yumuşatıldı
+                    if (this.opacity >= this.maxOpacity) this.state = 'out';
+                } else {
+                    this.opacity -= this.speedOfLife;
+                    if (this.opacity <= 0) {
+                        this.init();
+                    }
+                }
+
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.init();
+                }
+            }
+        }
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            let count = (canvas.width * canvas.height) / 8500;
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', init);
+        init();
+        animate();
+    </script>
+</body>
+</html>
