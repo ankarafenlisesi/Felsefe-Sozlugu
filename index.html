@@ -936,105 +936,107 @@ randomBtn.addEventListener('click', () => {
 
 renderAll(entries);
 
-// === PWA — Manifest + Service Worker ===
+// === PWA — Manifest + Service Worker (flPanel yöntemi) ===
 (function() {
-  // Canvas ile PNG ikon üret
+
   function makeIcon(size) {
-    var c = document.createElement('canvas');
+    const c = document.createElement('canvas');
     c.width = c.height = size;
-    var ctx = c.getContext('2d');
-    ctx.fillStyle = '#1a1510';
+    const ctx = c.getContext('2d');
+    const isLight = document.documentElement.classList.contains('light');
+    const bg     = isLight ? '#f5f0e8' : '#1a1510';
+    const accent = isLight ? '#8b4513' : '#c9a84c';
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, size, size);
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = 'bold ' + Math.floor(size * 0.62) + 'px serif';
+    const fs = Math.round(size * 0.58);
+    ctx.font = `bold ${fs}px serif`;
+    ctx.fillStyle = accent;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('φ', size / 2, size * 0.52);
-    return c.toDataURL('image/png').split(',')[1]; // sadece base64 kısmı
+    return c.toDataURL('image/png');
   }
 
-  var b64_192 = makeIcon(192);
-  var b64_512 = makeIcon(512);
+  const icon192 = makeIcon(192);
+  const icon512 = makeIcon(512);
 
-  // Manifest — ikonlar SW üzerinden gerçek URL ile serve edilecek
-  var manifest = {
-    id: "/Felsefe-Sozlugu/",
-    name: "Felsefe Sözlüğü",
-    short_name: "Felsefe Sözlüğü",
-    description: "Ankara Fen Lisesi Felsefe Sözlüğü",
-    start_url: "./",
-    scope: "./",
-    display: "standalone",
-    orientation: "any",
-    background_color: "#1a1510",
-    theme_color: "#1a1510",
-    lang: "tr",
+  const manifest = {
+    name: 'Felsefe Sözlüğü',
+    short_name: 'Felsefe Sözlüğü',
+    description: 'Ankara Fen Lisesi Felsefe Sözlüğü',
+    start_url: './',
+    scope: './',
+    display: 'standalone',
+    orientation: 'any',
+    background_color: '#1a1510',
+    theme_color: '#1a1510',
+    lang: 'tr',
     icons: [
-      { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
-      { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+      { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
     ]
   };
-  var mb = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(mb));
 
-  // Service Worker — hem sayfayı hem ikonları cache'le ve serve et
-  if (!('serviceWorker' in navigator)) return;
+  const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestUrl  = URL.createObjectURL(manifestBlob);
+  document.getElementById('pwa-manifest').setAttribute('href', manifestUrl);
 
-  var CACHE = 'felsefe-v3';
-  var swCode = [
-    "var CACHE='" + CACHE + "';",
-    "var ICON192='" + b64_192 + "';",
-    "var ICON512='" + b64_512 + "';",
-    "function b64ToResponse(b64){",
-    "  var bin=atob(b64),arr=new Uint8Array(bin.length);",
-    "  for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);",
-    "  return new Response(arr,{status:200,headers:{'Content-Type':'image/png','Cache-Control':'public,max-age=31536000'}});",
-    "}",
-    "var PAGE=self.location.href.split('/sw-')[0].replace(/\\/[^/]*$/,'/')+'index.html';",
-    "self.addEventListener('install',function(ev){",
-    "  ev.waitUntil(caches.open(CACHE).then(function(c){return c.addAll([PAGE]);}));",
-    "  self.skipWaiting();",
-    "});",
-    "self.addEventListener('activate',function(ev){",
-    "  ev.waitUntil(caches.keys().then(function(keys){",
-    "    return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));",
-    "  }));",
-    "  self.clients.claim();",
-    "});",
-    "self.addEventListener('message',function(e){if(e.data==='skipWaiting')self.skipWaiting();});",
-    "self.addEventListener('fetch',function(ev){",
-    "  var url=ev.request.url;",
-    "  if(url.endsWith('icon-192.png')){ev.respondWith(b64ToResponse(ICON192));return;}",
-    "  if(url.endsWith('icon-512.png')){ev.respondWith(b64ToResponse(ICON512));return;}",
-    "  if(ev.request.method!=='GET')return;",
-    "  ev.respondWith(caches.match(ev.request).then(function(cached){",
-    "    var fresh=fetch(ev.request).then(function(res){",
-    "      if(res&&res.status===200){var cl=res.clone();caches.open(CACHE).then(function(c){c.put(ev.request,cl);});}",
-    "      return res;",
-    "    }).catch(function(){return cached;});",
-    "    return cached||fresh;",
-    "  }));",
-    "});"
-  ].join('\n');
+  const CACHE = 'felsefe-sozlugu-20260508';
+  const swCode = `
+const CACHE_NAME = 'felsefe-sozlugu-20260508';
+const URLS = [self.location.href.replace('/sw-inline', '')];
 
-  var blob = new Blob([swCode], { type: 'application/javascript' });
-  var swUrl = URL.createObjectURL(blob);
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(c => c.addAll(URLS)).then(() => self.skipWaiting())
+  );
+});
 
-  navigator.serviceWorker.register(swUrl, { scope: './' })
-    .then(function(reg) {
-      reg.addEventListener('updatefound', function() {
-        var newSW = reg.installing;
-        newSW.addEventListener('statechange', function() {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            newSW.postMessage('skipWaiting');
-            navigator.serviceWorker.addEventListener('controllerchange', function() {
-              window.location.reload();
-            });
-          }
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request).then(res => {
+      const clone = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+      return res;
+    }).catch(() => caches.match(e.request))
+  );
+});
+
+self.addEventListener('message', e => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
+});
+`;
+
+  if ('serviceWorker' in navigator) {
+    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl  = URL.createObjectURL(swBlob);
+
+    navigator.serviceWorker.register(swUrl, { scope: './' })
+      .then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              newSW.postMessage('skipWaiting');
+              navigator.serviceWorker.addEventListener('controllerchange', () => {
+                window.location.reload();
+              });
+            }
+          });
         });
-      });
-    })
-    .catch(function() {});
+      })
+      .catch(() => {});
+  }
+
 })();
 
 </script>
