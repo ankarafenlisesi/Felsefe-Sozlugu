@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Felsefe Sözlüğü">
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22short_name%22%3A%22Felsefe%22%2C%22description%22%3A%22Ankara%20Fen%20Lisesi%20Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22start_url%22%3A%22.%2Findex.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1510%22%2C%22theme_color%22%3A%22%231a1510%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%3D%25270%25200%2520512%2520512%2527%253E%253Crect%2520width%3D%2527512%2527%2520height%3D%2527512%2527%2520rx%3D%252780%2527%2520fill%3D%2527%25231a1510%2527%2F%253E%253Ctext%2520x%3D%2527256%2527%2520y%3D%2527360%2527%2520font-size%3D%2527320%2527%2520text-anchor%3D%2527middle%2527%2520fill%3D%2527%2523c9a84c%2527%253E%25CF%2586%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22short_name%22%3A%22Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22description%22%3A%22Ankara%20Fen%20Lisesi%20Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22start_url%22%3A%22.%2Findex.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1510%22%2C%22theme_color%22%3A%22%231a1510%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%3D%25270%25200%2520512%2520512%2527%253E%253Crect%2520width%3D%2527512%2527%2520height%3D%2527512%2527%2520rx%3D%252780%2527%2520fill%3D%2527%25231a1510%2527%2F%253E%253Ctext%2520x%3D%2527256%2527%2520y%3D%2527360%2527%2520font-size%3D%2527320%2527%2520text-anchor%3D%2527middle%2527%2520fill%3D%2527%2523c9a84c%2527%253E%25CF%2586%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
 <script>
   // Erken tema init — flash önlemek için head'de çalışır
   (function() {
@@ -221,6 +221,11 @@
     margin-bottom: 2.5rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--aged);
+    transition: opacity 0.2s;
+  }
+
+  .alpha-nav.hidden {
+    display: none;
   }
 
   .alpha-btn {
@@ -232,13 +237,6 @@
     color: var(--muted);
     cursor: pointer;
     border-radius: 2px;
-    transition: all 0.15s;
-  }
-
-  .alpha-btn:hover, .alpha-btn.active {
-    background: var(--accent);
-    color: var(--paper);
-    border-color: var(--accent);
   }
 
   .alpha-btn.disabled { opacity: 0.3; cursor: default; pointer-events: none; }
@@ -269,39 +267,76 @@
     background: linear-gradient(to right, var(--aged), transparent);
   }
 
-  /* Entries */
+  /* Entries — accordion */
   .entry {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 0 2rem;
-    padding: 1.2rem 0;
     border-bottom: 1px solid rgba(232, 223, 200, 0.6);
     opacity: 0;
     animation: fadeUp 0.4s ease forwards;
-    transition: background 0.15s;
-  }
-
-  .entry:hover {
-    background: rgba(240, 230, 208, 0.4);
-    margin: 0 -1rem;
-    padding: 1.2rem 1rem;
-    border-radius: 2px;
   }
 
   .entry-term {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0.5rem;
     font-family: 'Playfair Display', serif;
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--accent);
-    padding-top: 0.1rem;
-    line-height: 1.4;
-    word-break: break-word;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+
+  .entry-term:hover {
+    background: var(--highlight);
+    box-shadow: inset 3px 0 0 var(--gold);
+  }
+
+  .entry-term.open {
+    background: var(--highlight);
+    box-shadow: inset 3px 0 0 var(--accent);
+    border-radius: 2px 2px 0 0;
+  }
+
+  .entry-chevron {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--gold);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .entry-term.open .entry-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Scroll anchor koruması */
+  .wrapper {
+    overflow-anchor: auto;
+  }
+
+  .entry-def-wrap {
+    height: 0;
+    overflow: hidden;
+    overflow-anchor: none;
+    transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .entry-def-inner {
+    /* padding için inner kullanılıyor */
   }
 
   .entry-def {
     font-size: 0.92rem;
     line-height: 1.75;
     color: var(--entry-def-color);
+    padding: 0.6rem 0.5rem 1rem 0.5rem;
+    background: var(--highlight);
+    border-radius: 0 0 2px 2px;
+    box-shadow: inset 3px 0 0 var(--accent);
   }
 
   .entry.hidden { display: none; }
@@ -325,18 +360,84 @@
   /* Stats */
   .stats-bar {
     display: flex;
+    align-items: center;
     gap: 2rem;
     margin-bottom: 2.5rem;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1.5rem;
     background: var(--highlight);
     border-left: 3px solid var(--gold);
     font-size: 0.82rem;
     color: var(--muted);
   }
 
-  .stat strong { color: var(--ink); font-family: 'Playfair Display', serif; font-size: 1.1rem; }
+  .stats-bar.hidden { display: none; }
 
-  /* Footer */
+  /* Sabit köşe butonları */
+  #scrollTop {
+    position: fixed;
+    bottom: 5.5rem;
+    left: 2rem;
+    width: 42px; height: 42px;
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    border-radius: 2px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(139,69,19,0.3);
+  }
+  #scrollTop.visible { opacity: 1; }
+
+  #randomBtn {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    width: 42px; height: 42px;
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    border-radius: 2px;
+    font-size: 1.4rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s, background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(139,69,19,0.3);
+  }
+  #randomBtn.visible { opacity: 1; }
+  #randomBtn:hover { background: var(--gold); }
+
+  #toggleAllBtn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 0 1rem;
+    height: 42px;
+    font-family: 'Lora', serif;
+    font-size: 0.82rem;
+    font-style: italic;
+    background: var(--accent);
+    border: none;
+    color: var(--paper);
+    border-radius: 2px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s, background 0.15s;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(139,69,19,0.3);
+    white-space: nowrap;
+  }
+  #toggleAllBtn.visible { opacity: 1; }
+  #toggleAllBtn:hover { background: var(--gold); }
   footer {
     text-align: center;
     padding: 2.5rem 0 1rem;
@@ -368,33 +469,8 @@
     color: var(--light-muted);
   }
 
-  /* Scroll to top */
-  #scrollTop {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 42px; height: 42px;
-    background: var(--accent);
-    color: var(--paper);
-    border: none;
-    border-radius: 2px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    box-shadow: 0 2px 12px rgba(139,69,19,0.3);
-  }
-  #scrollTop.visible { opacity: 1; }
-
   @media (max-width: 600px) {
-    .entry {
-      grid-template-columns: 1fr;
-      gap: 0.4rem;
-    }
+    .entry { gap: 0.4rem; }
     .stats-bar { flex-direction: column; gap: 0.5rem; }
   }
 </style>
@@ -424,11 +500,6 @@
     </button>
   </header>
 
-  <div class="stats-bar">
-    <div><strong id="totalCount">—</strong> kavram</div>
-    <div><strong id="sectionCount">—</strong> bölüm</div>
-  </div>
-
   <div class="search-area">
     <span class="search-icon">⌕</span>
     <input type="text" id="searchInput" placeholder="Kavram ara…" autocomplete="off">
@@ -436,6 +507,11 @@
   </div>
 
   <div class="alpha-nav" id="alphaNav"></div>
+
+  <div class="stats-bar">
+    <div><strong id="totalCount">—</strong> kavram</div>
+    <div><strong id="sectionCount">—</strong> bölüm</div>
+  </div>
 
   <div id="dictionary"></div>
   <div class="no-results" id="noResults">
@@ -453,6 +529,8 @@
 </div>
 
 <button id="scrollTop" title="Yukarı çık">↑</button>
+<button id="randomBtn" title="Rastgele kavram">⚄</button>
+<button id="toggleAllBtn" onclick="toggleAll()">Tümünü Aç</button>
 
 <script>
 const entries = [
@@ -646,7 +724,18 @@ function renderAll(list) {
       const entry = document.createElement('div');
       entry.className = 'entry';
       entry.style.animationDelay = (gi * 0.05 + i * 0.03) + 's';
-      entry.innerHTML = `<div class="entry-term">${e.term}</div><div class="entry-def">${e.def}</div>`;
+      entry.innerHTML = `
+        <div class="entry-term" onclick="toggleEntry(this)">
+          <span>${e.term}</span>
+          <svg class="entry-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+        <div class="entry-def-wrap">
+          <div class="entry-def-inner">
+            <div class="entry-def">${e.def}</div>
+          </div>
+        </div>`;
       section.appendChild(entry);
     });
 
@@ -666,8 +755,6 @@ turkishAlpha.forEach(l => {
     btn.addEventListener('click', () => {
       const el = document.getElementById('section-' + l);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      document.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
     });
   }
   alphaNav.appendChild(btn);
@@ -677,10 +764,14 @@ turkishAlpha.forEach(l => {
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.toLocaleLowerCase('tr').trim();
   if (!q) {
+    alphaNav.classList.remove('hidden');
+    document.querySelector('.stats-bar').classList.remove('hidden');
     renderAll(entries);
     resultCountEl.textContent = '';
     return;
   }
+  alphaNav.classList.add('hidden');
+  document.querySelector('.stats-bar').classList.add('hidden');
   const filtered = entries.filter(e =>
     e.term.toLocaleLowerCase('tr').includes(q)
   );
@@ -688,7 +779,84 @@ searchInput.addEventListener('input', () => {
   resultCountEl.textContent = filtered.length + ' sonuç';
 });
 
-// === TEMA — flPanel sistemi ===
+// === Accordion ===
+
+function openEntry(termEl, instant) {
+  const wrap = termEl.nextElementSibling;
+  const inner = wrap.firstElementChild;
+  termEl.classList.add('open');
+  if (instant) {
+    wrap.style.transition = 'none';
+    wrap.style.height = inner.offsetHeight + 'px';
+  } else {
+    wrap.style.transition = 'none';
+    wrap.style.height = 'auto';
+    const h = inner.offsetHeight;
+    wrap.style.height = '0';
+    requestAnimationFrame(() => {
+      wrap.style.transition = '';
+      wrap.style.height = h + 'px';
+    });
+  }
+}
+
+function closeEntry(termEl, instant) {
+  const wrap = termEl.nextElementSibling;
+  termEl.classList.remove('open');
+  if (instant) {
+    wrap.style.transition = 'none';
+    wrap.style.height = '0';
+  } else {
+    wrap.style.height = wrap.offsetHeight + 'px';
+    requestAnimationFrame(() => {
+      wrap.style.transition = '';
+      wrap.style.height = '0';
+    });
+  }
+}
+
+function toggleEntry(termEl) {
+  if (termEl.classList.contains('open')) {
+    closeEntry(termEl, false);
+  } else {
+    openEntry(termEl, false);
+  }
+  updateToggleAllBtn();
+}
+
+function toggleAll() {
+  const allTerms = document.querySelectorAll('.entry-term');
+  const allOpen = [...allTerms].every(t => t.classList.contains('open'));
+
+  // Anchor: ekranın ortasına en yakın entry
+  let anchorEl = null;
+  const mid = window.innerHeight / 2;
+  let minDist = Infinity;
+  allTerms.forEach(t => {
+    const dist = Math.abs(t.getBoundingClientRect().top - mid);
+    if (dist < minDist) { minDist = dist; anchorEl = t; }
+  });
+
+  const anchorTopBefore = anchorEl ? anchorEl.getBoundingClientRect().top : 0;
+
+  allTerms.forEach(t => allOpen ? closeEntry(t, true) : openEntry(t, true));
+
+  if (anchorEl) {
+    const diff = anchorEl.getBoundingClientRect().top - anchorTopBefore;
+    window.scrollBy({ top: diff, behavior: 'instant' });
+  }
+
+  document.getElementById('toggleAllBtn').textContent = allOpen ? 'Tümünü Aç' : 'Tümünü Kapat';
+}
+
+function updateToggleAllBtn() {
+  const allTerms = document.querySelectorAll('.entry-term');
+  if (!allTerms.length) return;
+  const allOpen = [...allTerms].every(t => t.classList.contains('open'));
+  document.getElementById('toggleAllBtn').textContent = allOpen ? 'Tümünü Kapat' : 'Tümünü Aç';
+}
+
+
 function toggleTheme() {
   const isLight = document.documentElement.classList.toggle('light');
   const sysLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -708,12 +876,47 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e 
   }
 });
 
-// Scroll to top button
+// Scroll to top + toggleAll + random görünürlük
 const scrollBtn = document.getElementById('scrollTop');
+const toggleAllBtn = document.getElementById('toggleAllBtn');
+const randomBtn = document.getElementById('randomBtn');
 window.addEventListener('scroll', () => {
-  scrollBtn.classList.toggle('visible', window.scrollY > 400);
+  const visible = window.scrollY > 400;
+  scrollBtn.classList.toggle('visible', visible);
+  toggleAllBtn.classList.toggle('visible', visible);
+  randomBtn.classList.toggle('visible', visible);
 });
 scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+let lastRandomTerm = null;
+
+randomBtn.addEventListener('click', () => {
+  // Önceki açılanı kapat
+  if (lastRandomTerm && lastRandomTerm.classList.contains('open')) {
+    closeEntry(lastRandomTerm, false);
+  }
+
+  const rand = entries[Math.floor(Math.random() * entries.length)];
+
+  // Terimin DOM elementini bul
+  let termEl = null;
+  const allTerms = document.querySelectorAll('.entry-term');
+  for (let t of allTerms) {
+    if (t.querySelector('span').textContent === rand.term) { termEl = t; break; }
+  }
+  if (!termEl) return;
+
+  lastRandomTerm = termEl;
+
+  // Önce instant scroll, sonra aç
+  termEl.scrollIntoView({ behavior: 'instant', block: 'center' });
+  openEntry(termEl, false);
+
+  // Parlama efekti
+  termEl.style.transition = 'background 0.15s';
+  termEl.style.background = 'var(--gold)';
+  setTimeout(() => { termEl.style.background = ''; termEl.style.transition = ''; }, 500);
+});
 
 renderAll(entries);
 
