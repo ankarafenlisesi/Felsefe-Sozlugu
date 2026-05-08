@@ -943,23 +943,22 @@ renderAll(entries);
     var c = document.createElement('canvas');
     c.width = c.height = size;
     var ctx = c.getContext('2d');
-    // Arka plan — tam kare (Windows görev çubuğu için)
     ctx.fillStyle = '#1a1510';
     ctx.fillRect(0, 0, size, size);
-    // φ harfi
     ctx.fillStyle = '#c9a84c';
     ctx.font = 'bold ' + Math.floor(size * 0.62) + 'px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('φ', size / 2, size * 0.52);
-    return c.toDataURL('image/png');
+    return c.toDataURL('image/png').split(',')[1]; // sadece base64 kısmı
   }
 
-  var icon192 = makeIcon(192);
-  var icon512 = makeIcon(512);
+  var b64_192 = makeIcon(192);
+  var b64_512 = makeIcon(512);
 
-  // Manifest
+  // Manifest — ikonlar SW üzerinden gerçek URL ile serve edilecek
   var manifest = {
+    id: "/Felsefe-Sozlugu/",
     name: "Felsefe Sözlüğü",
     short_name: "Felsefe Sözlüğü",
     description: "Ankara Fen Lisesi Felsefe Sözlüğü",
@@ -971,20 +970,27 @@ renderAll(entries);
     theme_color: "#1a1510",
     lang: "tr",
     icons: [
-      { src: icon192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
-      { src: icon512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+      { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
     ]
   };
   var mb = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
   document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(mb));
 
-  // Service Worker
+  // Service Worker — hem sayfayı hem ikonları cache'le ve serve et
   if (!('serviceWorker' in navigator)) return;
 
-  var CACHE = 'felsefe-v2';
+  var CACHE = 'felsefe-v3';
   var swCode = [
     "var CACHE='" + CACHE + "';",
-    "var PAGE=self.location.href.split('/sw-')[0];",
+    "var ICON192='" + b64_192 + "';",
+    "var ICON512='" + b64_512 + "';",
+    "function b64ToResponse(b64){",
+    "  var bin=atob(b64),arr=new Uint8Array(bin.length);",
+    "  for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);",
+    "  return new Response(arr,{status:200,headers:{'Content-Type':'image/png','Cache-Control':'public,max-age=31536000'}});",
+    "}",
+    "var PAGE=self.location.href.split('/sw-')[0].replace(/\\/[^/]*$/,'/')+'index.html';",
     "self.addEventListener('install',function(ev){",
     "  ev.waitUntil(caches.open(CACHE).then(function(c){return c.addAll([PAGE]);}));",
     "  self.skipWaiting();",
@@ -997,6 +1003,9 @@ renderAll(entries);
     "});",
     "self.addEventListener('message',function(e){if(e.data==='skipWaiting')self.skipWaiting();});",
     "self.addEventListener('fetch',function(ev){",
+    "  var url=ev.request.url;",
+    "  if(url.endsWith('icon-192.png')){ev.respondWith(b64ToResponse(ICON192));return;}",
+    "  if(url.endsWith('icon-512.png')){ev.respondWith(b64ToResponse(ICON512));return;}",
     "  if(ev.request.method!=='GET')return;",
     "  ev.respondWith(caches.match(ev.request).then(function(cached){",
     "    var fresh=fetch(ev.request).then(function(res){",
