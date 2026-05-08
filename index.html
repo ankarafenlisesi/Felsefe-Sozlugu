@@ -11,7 +11,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Felsefe Sözlüğü">
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22short_name%22%3A%22Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22description%22%3A%22Ankara%20Fen%20Lisesi%20Felsefe%20S%C3%B6zl%C3%BC%C4%9F%C3%BC%22%2C%22start_url%22%3A%22.%2Findex.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1510%22%2C%22theme_color%22%3A%22%231a1510%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%3D%25270%25200%2520512%2520512%2527%253E%253Crect%2520width%3D%2527512%2527%2520height%3D%2527512%2527%2520rx%3D%252780%2527%2520fill%3D%2527%25231a1510%2527%2F%253E%253Ctext%2520x%3D%2527256%2527%2520y%3D%2527360%2527%2520font-size%3D%2527320%2527%2520text-anchor%3D%2527middle%2527%2520fill%3D%2527%2523c9a84c%2527%253E%25CF%2586%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231a1510'/><text x='256' y='360' font-size='320' text-anchor='middle' fill='%23c9a84c' font-family='serif'>φ</text></svg>">
+<link rel="manifest" id="pwa-manifest">
 <script>
   // Erken tema init — flash önlemek için head'de çalışır
   (function() {
@@ -63,7 +64,6 @@
     color: var(--ink);
     font-family: 'Lora', Georgia, serif;
     min-height: 100vh;
-    padding-bottom: 50px; 
     background-image:
       radial-gradient(ellipse at 10% 20%, rgba(201,168,76,0.07) 0%, transparent 60%),
       radial-gradient(ellipse at 90% 80%, rgba(139,69,19,0.06) 0%, transparent 60%);
@@ -86,6 +86,20 @@
     max-width: 900px;
     margin: 0 auto;
     padding: 0 2rem 4rem;
+  }
+
+  @media (min-width: 1200px) {
+    .wrapper {
+      max-width: 1100px;
+      padding: 0 4rem 4rem;
+    }
+  }
+
+  @media (min-width: 1600px) {
+    .wrapper {
+      max-width: 1300px;
+      padding: 0 5rem 4rem;
+    }
   }
 
   /* Header */
@@ -921,19 +935,77 @@ randomBtn.addEventListener('click', () => {
 
 renderAll(entries);
 
-// === PWA — Service Worker (inline blob, cache-first) ===
-if ('serviceWorker' in navigator) {
-  const swCode = [
-    "const CACHE='felsefe-v1';",
-    "const FONTS=['https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap'];",
-    "self.addEventListener('install',function(ev){ev.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(FONTS);}).catch(function(){}));self.skipWaiting();});",
-    "self.addEventListener('activate',function(ev){ev.waitUntil(caches.keys().then(function(keys){return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));}));self.clients.claim();});",
-    "self.addEventListener('fetch',function(ev){if(ev.request.method!=='GET')return;ev.respondWith(caches.match(ev.request).then(function(cached){if(cached)return cached;return fetch(ev.request).then(function(res){if(!res||res.status!==200)return res;var clone=res.clone();caches.open(CACHE).then(function(c){c.put(ev.request,clone);});return res;}).catch(function(){return cached||new Response('Offline',{status:503});});}));});"
+// === PWA — Manifest + Service Worker ===
+(function() {
+  // Manifest
+  var svgIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%231a1510'/%3E%3Ctext x='256' y='360' font-size='320' text-anchor='middle' fill='%23c9a84c' font-family='serif'%3E%CF%86%3C%2Ftext%3E%3C%2Fsvg%3E";
+  var manifest = {
+    name: "Felsefe Sözlüğü",
+    short_name: "Felsefe Sözlüğü",
+    description: "Ankara Fen Lisesi Felsefe Sözlüğü",
+    start_url: "./",
+    scope: "./",
+    display: "standalone",
+    orientation: "any",
+    background_color: "#1a1510",
+    theme_color: "#1a1510",
+    lang: "tr",
+    icons: [
+      { src: svgIcon, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+    ]
+  };
+  var mb = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(mb));
+
+  // Service Worker
+  if (!('serviceWorker' in navigator)) return;
+
+  var CACHE = 'felsefe-v2';
+  var swCode = [
+    "var CACHE='" + CACHE + "';",
+    "var PAGE=self.location.href.split('/sw-')[0];",
+    "self.addEventListener('install',function(ev){",
+    "  ev.waitUntil(caches.open(CACHE).then(function(c){return c.addAll([PAGE]);}));",
+    "  self.skipWaiting();",
+    "});",
+    "self.addEventListener('activate',function(ev){",
+    "  ev.waitUntil(caches.keys().then(function(keys){",
+    "    return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));",
+    "  }));",
+    "  self.clients.claim();",
+    "});",
+    "self.addEventListener('message',function(e){if(e.data==='skipWaiting')self.skipWaiting();});",
+    "self.addEventListener('fetch',function(ev){",
+    "  if(ev.request.method!=='GET')return;",
+    "  ev.respondWith(caches.match(ev.request).then(function(cached){",
+    "    var fresh=fetch(ev.request).then(function(res){",
+    "      if(res&&res.status===200){var cl=res.clone();caches.open(CACHE).then(function(c){c.put(ev.request,cl);});}",
+    "      return res;",
+    "    }).catch(function(){return cached;});",
+    "    return cached||fresh;",
+    "  }));",
+    "});"
   ].join('\n');
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl, { scope: './' }).catch(function() {});
-}
+
+  var blob = new Blob([swCode], { type: 'application/javascript' });
+  var swUrl = URL.createObjectURL(blob);
+
+  navigator.serviceWorker.register(swUrl, { scope: './' })
+    .then(function(reg) {
+      reg.addEventListener('updatefound', function() {
+        var newSW = reg.installing;
+        newSW.addEventListener('statechange', function() {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            newSW.postMessage('skipWaiting');
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+              window.location.reload();
+            });
+          }
+        });
+      });
+    })
+    .catch(function() {});
+})();
 
 </script>
 </body>
