@@ -254,6 +254,13 @@
     cursor: pointer;
     border-radius: 2px;
   }
+  /* Mobil */
+  @media (max-width: 768px) {
+    .alpha-btn {
+      font-size: 1rem;
+      padding: 0.2rem 0.22rem;
+    }
+  }
 
   .alpha-btn.disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 
@@ -536,12 +543,18 @@
   </div>
 
   <footer>
-    <div class="footer-names">
-      <span class="footer-label">Hazırlayanlar</span>
-      Sema Muratoğlu &nbsp;·&nbsp; Talha Eslem Özdemir &nbsp;·&nbsp; Zeynep Serra Doğan
-    </div>
-    <div class="footer-bottom">Ankara Fen Lisesi &nbsp;·&nbsp; Felsefe Sözlüğü</div>
-  </footer>
+  <div class="footer-names">
+    <span class="footer-label">Hazırlayanlar</span>
+
+    <div>Sema Muratoğlu</div>
+    <div>Talha Eslem Özdemir</div>
+    <div>Zeynep Serra Doğan</div>
+  </div>
+
+  <div class="footer-bottom">
+    Ankara Fen Lisesi · Felsefe Sözlüğü
+  </div>
+</footer>
 </div>
 
 <button id="scrollTop" title="Yukarı çık">↑</button>
