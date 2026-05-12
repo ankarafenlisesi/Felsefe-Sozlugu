@@ -515,10 +515,7 @@
 
   <div class="alpha-nav" id="alphaNav"></div>
 
-  <div class="stats-bar">
-    <div><strong id="totalCount">—</strong> kavram</div>
-    <div><strong id="sectionCount">—</strong> bölüm</div>
-  </div>
+
 
   <div id="dictionary"></div>
   <div class="no-results" id="noResults">
@@ -686,19 +683,14 @@ const searchInput = document.getElementById('searchInput');
 const resultCountEl = document.getElementById('resultCount');
 const noResults = document.getElementById('noResults');
 const alphaNav = document.getElementById('alphaNav');
-const totalCountEl = document.getElementById('totalCount');
-const sectionCountEl = document.getElementById('sectionCount');
-
-totalCountEl.textContent = entries.length;
+searchInput.placeholder = entries.length + ' kavram içinde ara…';
 
 function renderAll(list) {
   dictEl.innerHTML = '';
   const groups = groupEntries(list);
   const letters = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'tr'));
 
-  sectionCountEl.textContent = letters.length;
-
-  if (list.length === 0) {
+if (list.length === 0) {
     noResults.style.display = 'block';
     resultCountEl.textContent = '0 sonuç';
     return;
@@ -762,13 +754,11 @@ searchInput.addEventListener('input', () => {
   const q = searchInput.value.toLocaleLowerCase('tr').trim();
   if (!q) {
     alphaNav.classList.remove('hidden');
-    document.querySelector('.stats-bar').classList.remove('hidden');
     renderAll(entries);
     resultCountEl.textContent = '';
     return;
   }
   alphaNav.classList.add('hidden');
-  document.querySelector('.stats-bar').classList.add('hidden');
   const filtered = entries.filter(e =>
     e.term.toLocaleLowerCase('tr').includes(q)
   );
