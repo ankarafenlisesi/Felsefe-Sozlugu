@@ -932,7 +932,7 @@ if (list.length === 0) {
 
 // Alpha nav
 const allLetters = [...new Set(entries.map(e => getFirstLetter(e.term)))].sort((a,b) => a.localeCompare(b,'tr'));
-const turkishAlpha = ['A','B','C','Ç','D','E','F','G','H','I','İ','J','K','L','M','N','O','Ö','P','R','S','Ş','T','U','Ü','V','Y','Z'];
+const turkishAlpha = ['A','B','C','Ç','D','E','F','G','H','I','İ','K','L','M','N','O','Ö','P','R','S','Ş','T','U','Ü','V','Y','Z'];
 
 turkishAlpha.forEach(l => {
   const btn = document.createElement('button');
